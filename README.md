@@ -143,10 +143,10 @@ split **11,481 / 1,435 / 1,436** (train/val/test). Test-set **macro** metrics.
 
 | Model | AUROC | AUPR | F1 |
 |-------|:-----:|:----:|:--:|
-| Strategy A — GIN, no pretrain | 0.715 | 0.290 | 0.368 |
-| Strategy B — attribute-mask pretrain (200K) | 0.758 | 0.385 | 0.385 |
-| Strategy B — GraphMAE pretrain (714K) | **0.777** | 0.402 | 0.396 |
-| Strategy B — MolCLR pretrain (714K) | 0.771 | **0.416** | 0.383 |
+| Strategy A - GIN, no pretrain | 0.715 | 0.290 | 0.368 |
+| Strategy B - attribute-mask pretrain (200K) | 0.758 | 0.385 | 0.385 |
+| Strategy B - GraphMAE pretrain (714K) | **0.777** | 0.402 | 0.396 |
+| Strategy B - MolCLR pretrain (714K) | 0.771 | **0.416** | 0.383 |
 | Morgan FP + Random Forest | 0.779 | 0.401 | 0.188 |
 | **GIN (GraphMAE) + RF ensemble** | **0.795** | **0.423** | **0.418** |
 
@@ -154,27 +154,25 @@ split **11,481 / 1,435 / 1,436** (train/val/test). Test-set **macro** metrics.
 
 - **Domain pretraining helps, and it's real (not seed noise).** Across seeds
   42/1/7, Strategy B beats Strategy A on AUROC (**0.763 ± 0.008** vs 0.703 ± 0.021)
-  and AUPR (0.385 vs 0.309); the largest gains are on the scarcest label
+  and AUPR (0.385 vs 0.309). The largest gains are on the scarcest label
   (antileishmanial).
 - **Mask, don't zero, the missing labels.** Masked BCE beats the naive
   "untested = inactive" loss on F1 (0.385 vs 0.222). Much of that gap is a
-  calibration artifact — per-label threshold tuning lifts the naive model's F1
-  to 0.393 — but masking still wins without any tuning.
+  calibration artifact. Per-label threshold tuning lifts the naive model's F1
+  to 0.393.
 - **A pure GIN can reach the classical baseline.** With GraphMAE (generative) or
   MolCLR (contrastive) pretraining on the full 714K corpus, Strategy B matches
-  the strong Morgan-FP + RF baseline on AUROC and AUPR — the first pure-GNN
-  configuration to do so. Generative vs. contrastive is a trade: GraphMAE wins
+  the strong Morgan-FP + RF baseline on AUROC and AUPR.
+  Generative vs. contrastive is a trade: GraphMAE wins
   AUROC, MolCLR wins AUPR.
 - **The GIN + RF ensemble is the strongest model.** A plain probability average
   of the GraphMAE GIN and the RF beats *both* parents on all three metrics
   (AUROC +0.016, AUPR +0.022 over RF); a per-label logistic stack matches it. The
-  two model families are complementary — the ensemble wins even before any
-  meta-model.
-- **Negative result — more data ≠ better under distribution shift.** Training on
+  two model families are complementary.
+- **Negative result: more data ≠ better under distribution shift.** Training on
   the broad ChEMBL antiparasitic corpus (60K+ compounds) but testing on natural
   products *hurt* every model versus training on the smaller on-distribution
-  COCONUT∩ChEMBL set. On-distribution signal beats raw quantity here — though
-  pretraining still helps under the shift.
+  COCONUT∩ChEMBL set.
 
 *Single-seed rows are indicative; confirmed gaps (Strategy B > A) are multi-seed.
 Reproduce the table with `scripts/4_evaluate.py report` after fine-tuning, and the
@@ -185,7 +183,7 @@ robustness numbers with `scripts/experiments.py multiseed`.*
 `scripts/experiments.py explain` attributes a prediction back to atoms. For a
 sum-pooled GIN the graph embedding is `h_G = Σ_v z_v`, so each atom's
 contribution to a label's pre-sigmoid logit is exactly `s_v = (∂logit/∂h_G) · z_v`
-— a first-order/CAM-style decomposition. It renders a 2D heat-map, a 3D conformer
+A first-order/CAM-style decomposition. It renders a 2D heat-map, a 3D conformer
 PNG, and an interactive rotatable 3D view (3Dmol.js) per demo molecule.
 
 ## Design notes
@@ -193,9 +191,9 @@ PNG, and an interactive rotatable 3D view (3Dmol.js) per demo molecule.
 - **Graph features** follow the OGB / Hu et al. (2020) convention: 42-dim atom
   vectors, 10-dim bond vectors.
 - **GIN** is a 5-layer, hidden-300 network using PyG `GINEConv`, folding bond
-  features into message passing via a per-layer edge projection; sum pooling for
+  features into message passing via a per-layer edge projection, sum pooling for
   readout.
-- **Missing labels are masked, not zeroed** — a compound untested for an activity
+- **Missing labels are masked, not zeroed**: a compound untested for an activity
   contributes nothing to that label's loss (`--naive-loss` flips this to measure
   its impact).
 - **Class imbalance** is handled by per-label inverse-frequency `pos_weight`.
