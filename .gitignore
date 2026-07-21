@@ -1,0 +1,17 @@
+# --- data / artifacts (kept out of git; folders preserved via .gitkeep) -------
+data/raw/*
+data/processed/*
+checkpoints/*
+results/*
+!**/.gitkeep
+
+# --- python -------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# --- os -----------------------------------------------------------------------
+.DS_Store

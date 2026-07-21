@@ -1,0 +1,79 @@
+# Default configuration for the GNN bioactivity pipeline.
+# Override any field on the command line, e.g.:
+#   python scripts/04_finetune.py --strategy B --epochs 150
+
+seed: 42
+
+# ---------------------------------------------------------------- data
+paths:
+  coconut_csv: data/raw/coconut.csv          # coconut_id, canonical_smiles, inchikey, name
+  chembl_csv: data/raw/chembl_labels.csv     # inchikey + 4 binary label columns
+  processed_dir: data/processed
+  checkpoint_dir: checkpoints
+  results_dir: results
+
+labels:
+  - antimalarial
+  - antitrypanosomal
+  - antileishmanial
+  - antitubercular
+
+split:
+  method: scaffold       # scaffold | random
+  frac_train: 0.8
+  frac_val: 0.1
+  frac_test: 0.1
+
+# ---------------------------------------------------------------- model
+model:
+  in_dim: 42
+  edge_dim: 10
+  hidden_dim: 300
+  num_layers: 5
+  dropout: 0.5
+  num_labels: 4
+
+# ------------------------------------------------------------- pretrain
+pretrain:
+  mask_rate: 0.15
+  num_atom_types: 10     # first 10 atom-feature dims = atom-type one-hot
+  epochs: 50
+  batch_size: 256
+  lr: 1.0e-3
+
+# ------------------------------------------------- graphmae pretraining
+# Stronger SSL pretext (improve_paths.md path 4) + scale (path 5).
+graphmae:
+  mask_rate: 0.5         # much harder than attribute masking's 0.15
+  dec_layers: 1          # shallow GNN decoder
+  gamma: 2.0             # scaled-cosine-error exponent
+  epochs: 15
+  batch_size: 256
+  lr: 1.0e-3
+  shard_size: 120000     # graphs per shard (fits 16 GB RAM when streamed)
+
+# -------------------------------------------- contrastive pretraining
+# MolCLR-style contrastive pretext (improve_paths.md path 8).
+contrastive:
+  node_mask_rate: 0.25
+  edge_drop_rate: 0.25
+  temperature: 0.1
+  proj_dim: 256
+  epochs: 12
+  batch_size: 256
+  lr: 1.0e-3
+
+# ------------------------------------------------------------- finetune
+finetune:
+  epochs: 50
+  batch_size: 64
+  lr_strategy_a: 1.0e-3  # random init: standard LR
+  lr_strategy_b: 3.0e-4  # pretrained init: gentle updates
+  weight_decay: 1.0e-5
+  patience: 5            # ReduceLROnPlateau
+  use_pos_weight: true
+  use_masked_loss: true  # false => naive loss (missing labels treated as inactive)
+
+eval:
+  threshold: 0.5
+  tau_grid: [0.3, 0.4, 0.5, 0.6, 0.7]   # confidence-threshold sweep

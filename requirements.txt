@@ -1,0 +1,20 @@
+# Core deep learning — install torch first, then a matching PyG wheel.
+# See README for the exact, version-matched install commands.
+torch>=2.1
+torch-geometric>=2.4
+
+# Cheminformatics
+rdkit>=2023.9
+
+# Data / ML
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+scipy>=1.10
+
+# Plotting (explainability renders)
+matplotlib>=3.7
+
+# Utilities
+tqdm>=4.65
+pyyaml>=6.0
