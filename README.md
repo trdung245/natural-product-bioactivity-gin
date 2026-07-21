@@ -32,7 +32,7 @@ matched COCONUT∩ChEMBL labels Stage 2: supervised fine-tune──▶ 4× sigmo
 
 | Strategy | Pretraining | Fine-tuning |
 |----------|-------------|-------------|
-| **A** (baseline) | none — random init | ChEMBL labels only |
+| **A** (baseline) | none, random init | ChEMBL labels only |
 | **B** (proposed) | self-supervised on COCONUT graphs | matched ChEMBL labels |
 
 Plus a Morgan-fingerprint + Random-Forest baseline, a label-handling ablation
