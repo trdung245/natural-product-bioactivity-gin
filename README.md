@@ -11,8 +11,8 @@ chemical space. We ask whether **self-supervised pretraining on unlabeled natura
 products (COCONUT)** yields a molecular representation that transfers to
 data-scarce activity prediction. A 5-layer GIN encoder is first pretrained on
 ~200K–714K unlabeled COCONUT structures (attribute masking, GraphMAE, or MolCLR
-contrastive), then fine-tuned to predict four organism-defined activities —
-**antimalarial, antitrypanosomal, antileishmanial, antitubercular** — from
+contrastive), then fine-tuned to predict four organism-defined activities: 
+**antimalarial, antitrypanosomal, antileishmanial, antitubercular** from
 structure alone. Labels come from ChEMBL *phenotypic* screens keyed by assay
 organism, giving real actives **and** tested-inactives; compounds never tested
 for a given pathogen are **masked** in the loss rather than assumed inactive.
@@ -23,9 +23,9 @@ from scratch; the strongest generative/contrastive encoders match the RF
 baseline; and a **GIN + RF ensemble** clears it on every metric.
 
 ```
-COCONUT graphs ──Stage 1: self-supervised pretraining──▶ domain-adapted GIN encoder
+COCONUT graphs Stage 1: self-supervised pretraining──▶ domain-adapted GIN encoder
                                                                  │ weight transfer
-matched COCONUT∩ChEMBL labels ──Stage 2: supervised fine-tune──▶ 4× sigmoid (masked BCE)
+matched COCONUT∩ChEMBL labels Stage 2: supervised fine-tune──▶ 4× sigmoid (masked BCE)
 ```
 
 ### Two strategies compared
@@ -40,7 +40,7 @@ Plus a Morgan-fingerprint + Random-Forest baseline, a label-handling ablation
 
 ## Install
 
-PyTorch Geometric must match your PyTorch/CUDA build exactly — install Torch
+PyTorch Geometric must match your PyTorch/CUDA build exactly. Install Torch
 first, then the matching PyG wheel, then the rest:
 
 ```bash
@@ -61,9 +61,9 @@ assert Chem.MolFromSmiles("CC(=O)Oc1ccccc1C(=O)O") is not None
 
 See [`data/README.md`](data/README.md) for formats and download links:
 
-- **COCONUT** natural products — CSV (lite) from
+- **COCONUT** natural products: CSV (lite) from
   <https://coconut.naturalproducts.net/download>
-- **ChEMBL 37** SQLite dump — `chembl_37_sqlite.tar.gz` from
+- **ChEMBL 37** SQLite dump: `chembl_37_sqlite.tar.gz` from
   <https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/>
 
 To smoke-test the whole pipeline **without** the real data:
@@ -78,7 +78,7 @@ Every command reads knobs from [`configs/default.yaml`](configs/default.yaml);
 override on the command line (e.g. `--seed`, `--device`, `--epochs`).
 
 ```bash
-# 1) Prepare — labels, featurization, scaffold split
+# 1) Prepare labels, featurization, scaffold split
 python scripts/1_prepare.py extract-chembl --chembl-db /path/to/chembl_37.db
 python scripts/1_prepare.py build-graphs
 
@@ -86,8 +86,8 @@ python scripts/1_prepare.py build-graphs
 python scripts/2_pretrain.py mask                       # attribute masking (200k)
 #   optional stronger pretexts on the full 714k corpus:
 python scripts/1_prepare.py build-shards
-python scripts/2_pretrain.py graphmae   --epochs 4
-python scripts/2_pretrain.py contrastive --shards --epochs 2
+python scripts/2_pretrain.py graphmae   
+python scripts/2_pretrain.py contrastive
 
 # 3) Fine-tune (Stage 2)
 python scripts/3_finetune.py --strategy A               # baseline (random init)
@@ -106,7 +106,7 @@ python scripts/experiments.py ensemble --gin strategy_b_gmae
 python scripts/experiments.py explain  --model strategy_b_gmae
 ```
 
-Each grouped script is a small CLI — run `python scripts/<name>.py -h` (or
+Each grouped script is a small CLI run `python scripts/<name>.py -h` (or
 `<name>.py <subcommand> -h`) for its options.
 
 ## Layout
